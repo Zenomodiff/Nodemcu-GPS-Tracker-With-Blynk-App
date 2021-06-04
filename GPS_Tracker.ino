@@ -4,26 +4,25 @@
 #include <ESP8266WiFi.h>
 #include <BlynkSimpleEsp8266.h>
 
-static const int RXPin = 4, TXPin = 5;  //TX D2       RX D1
+static const int RXPin = 4, TXPin = 5;
 static const uint32_t GPSBaud = 9600; 
 
-TinyGPSPlus gps; // The TinyGPS++ object
-WidgetMap myMap(V0);  // V0 for virtual pin of Map Widget
+TinyGPSPlus gps;
+WidgetMap myMap(V0);  
 
-SoftwareSerial ss(RXPin, TXPin);  // The serial connection to the GPS device
+SoftwareSerial ss(RXPin, TXPin);
 
 BlynkTimer timer;
 
-float spd;       //Variable  to store the speed
-float sats;      //Variable to store no. of satellites response
-String bearing;  //Variable to store orientation or direction of GPS
+float spd;   
+float sats;   
+String bearing; 
 
-char auth[] = "";               //Your Project authentication key
-char ssid[] = "";                                 // Name of your network (HotSpot or Router name)
-char pass[] = "";                                     // Corresponding Password
+char auth[] = "";            
+char ssid[] = "";                               
+char pass[] = "";                           
 
-//unsigned int move_index;         // moving index, to be used later
-unsigned int move_index = 1;       // fixed location for now
+unsigned int move_index = 1;     
   
 
 void setup()
@@ -32,14 +31,14 @@ void setup()
   Serial.println();
   ss.begin(GPSBaud);
   Blynk.begin(auth, ssid, pass);
-  timer.setInterval(5000L, checkGPS); // every 5s check if GPS is connected, only really needs to be done once
+  timer.setInterval(5000L, checkGPS);
 }
 
 void checkGPS(){
   if (gps.charsProcessed() < 10)
   {
     Serial.println(F("No GPS detected: check wiring."));
-      Blynk.virtualWrite(V4, "GPS ERROR");  // Value Display widget  on V4 if GPS not detected
+      Blynk.virtualWrite(V4, "GPS ERROR");
   }
 }
 
@@ -47,7 +46,7 @@ void loop()
 {
     while (ss.available() > 0) 
     {
-      // sketch displays information every time a new sentence is correctly encoded.
+
       if (gps.encode(ss.read()))
         displayInfo();
   }
@@ -59,23 +58,23 @@ void displayInfo()
 { 
   if (gps.location.isValid() ) 
   {    
-    float latitude = (gps.location.lat());     //Storing the Lat. and Lon. 
+    float latitude = (gps.location.lat());    
     float longitude = (gps.location.lng()); 
     
     Serial.print("LAT:  ");
-    Serial.println(latitude, 6);  // float to x decimal places
+    Serial.println(latitude, 6); 
     Serial.print("LONG: ");
     Serial.println(longitude, 6);
     Blynk.virtualWrite(V1, String(latitude, 6));   
     Blynk.virtualWrite(V2, String(longitude, 6));  
     myMap.location(move_index, latitude, longitude, "GPS_Location");
-    spd = gps.speed.kmph();               //get speed
+    spd = gps.speed.kmph();         
        Blynk.virtualWrite(V3, spd);
        
-       sats = gps.satellites.value();    //get number of satellites
+       sats = gps.satellites.value(); 
        Blynk.virtualWrite(V4, sats);
 
-       bearing = TinyGPSPlus::cardinal(gps.course.value()); // get the direction
+       bearing = TinyGPSPlus::cardinal(gps.course.value());
        Blynk.virtualWrite(V5, bearing);                   
   }
   
